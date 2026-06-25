@@ -4,7 +4,16 @@ import Link from 'next/link';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import { products } from '@/lib/data';
-import type { PreorderConfig, SSEMoqEvent } from '@/lib/types';
+import type { PreorderConfig } from '@/lib/types';
+
+const d = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
+
+const HARDCODED_CONFIGS: PreorderConfig[] = [
+  { id: 1, product_id: 1, moq: 1000, current_count: 847, deadline: d(30), status: 'open', price_cents: 89_900,  created_at: '', updated_at: '' },
+  { id: 2, product_id: 3, moq: 500,  current_count: 312, deadline: d(14), status: 'open', price_cents: 129_900, created_at: '', updated_at: '' },
+  { id: 3, product_id: 4, moq: 750,  current_count: 698, deadline: d(7),  status: 'open', price_cents: 189_900, created_at: '', updated_at: '' },
+  { id: 4, product_id: 9, moq: 300,  current_count: 45,  deadline: d(60), status: 'open', price_cents: 149_900, created_at: '', updated_at: '' },
+];
 
 const SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const COLORS = [
@@ -62,42 +71,12 @@ export default function PreorderPage() {
   const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
-    fetch('/api/preorder/products')
-      .then(r => r.json())
-      .then((data: PreorderConfig[]) => {
-        const map: Record<number, PreorderConfig> = {};
-        let total = 0;
-        for (const c of data) { map[c.product_id] = c; total += c.current_count; }
-        setConfigs(map);
-        setTotalOrders(total);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    const es = new EventSource('/api/preorder/stream');
-    es.onmessage = (ev) => {
-      try {
-        const event: SSEMoqEvent = JSON.parse(ev.data);
-        if (event.type === 'moq_update') {
-          setConfigs(prev => {
-            const old = prev[event.productId]?.current_count ?? 0;
-            setTotalOrders(t => t - old + event.currentCount);
-            return {
-              ...prev,
-              [event.productId]: {
-                ...prev[event.productId],
-                current_count: event.currentCount,
-                status: event.status,
-              },
-            };
-          });
-        }
-      } catch { /* ignore */ }
-    };
-    return () => es.close();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const map: Record<number, PreorderConfig> = {};
+    let total = 0;
+    for (const c of HARDCODED_CONFIGS) { map[c.product_id] = c; total += c.current_count; }
+    setConfigs(map);
+    setTotalOrders(total);
+    setLoading(false);
   }, []);
 
   const openModal = useCallback((productId: number) => {
