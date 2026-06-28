@@ -6,6 +6,7 @@ import Nav from '@/components/Nav';
 import { useStore } from '@/lib/store';
 import { content } from '@/lib/content';
 import { products } from '@/lib/data';
+import { useResponsive } from '@/lib/responsive';
 
 const FILTER_KEYS = ['all', 'tops', 'trousers', 'dresses', 'outerwear'] as const;
 
@@ -16,6 +17,8 @@ export default function BuildPage() {
   const isAr = lang === 'ar';
   const dir = isAr ? 'rtl' : 'ltr';
   const [copied, setCopied] = useState(false);
+  const { isMobile, isTablet } = useResponsive();
+  const px = isMobile ? '16px' : isTablet ? '32px' : '64px';
 
   const maxPieces = boxType === 'capsule' ? 5 : 10;
   const isFull = selected.length >= maxPieces;
@@ -41,20 +44,23 @@ export default function BuildPage() {
   const selectedProducts = selected.map(id => products.find(p => p.id === id)!).filter(Boolean);
   const slots = Array.from({ length: maxPieces }, (_, i) => selectedProducts[i] || null);
 
+  // On mobile, show slots in a 3-column grid instead of maxPieces columns
+  const step3GridCols = isMobile ? 'repeat(3, 1fr)' : isTablet ? `repeat(${Math.min(maxPieces, 5)}, 1fr)` : `repeat(${maxPieces}, 1fr)`;
+
   return (
     <>
       <Nav />
 
       {/* BREADCRUMB */}
-      <div dir={dir} style={{ background: '#FAFAF8', borderBottom: '1px solid rgba(26,24,20,.07)', padding: '0 64px' }}>
-        <div style={{ maxWidth: '1440px', margin: '0 auto', height: '52px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div dir={dir} style={{ background: '#FAFAF8', borderBottom: '1px solid rgba(26,24,20,.07)', padding: `0 ${px}`, overflowX: 'auto' }}>
+        <div style={{ maxWidth: '1440px', margin: '0 auto', height: '52px', display: 'flex', alignItems: 'center', gap: isMobile ? '10px' : '16px', minWidth: 'max-content' }}>
           {[1, 2, 3].map((s, i) => (
             <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: step === s ? '#1A1814' : step > s ? '#8B6F47' : 'transparent', border: `1px solid ${step >= s ? 'transparent' : 'rgba(26,24,20,.25)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '10px', fontWeight: 500, color: step >= s ? '#F5F0E8' : 'rgba(26,24,20,.4)' }}>{isAr ? ['١','٢','٣'][i] : s}</span>
                 </div>
-                <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '11px', fontWeight: 400, color: step === s ? '#1A1814' : 'rgba(26,24,20,.4)', letterSpacing: '.04em' }}>{stepLabels[i]}</span>
+                <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '11px', fontWeight: 400, color: step === s ? '#1A1814' : 'rgba(26,24,20,.4)', letterSpacing: '.04em', whiteSpace: 'nowrap' }}>{stepLabels[i]}</span>
               </div>
               {i < 2 && <span style={{ color: 'rgba(26,24,20,.25)', fontSize: '14px' }}>›</span>}
             </div>
@@ -64,14 +70,14 @@ export default function BuildPage() {
 
       {/* STEP 1 */}
       {step === 1 && (
-        <div dir={dir} style={{ background: '#FAFAF8', padding: '80px 64px', minHeight: 'calc(100vh - 116px)' }}>
+        <div dir={dir} style={{ background: '#FAFAF8', padding: `${isMobile ? '48px' : '80px'} ${px}`, minHeight: 'calc(100vh - 116px)' }}>
           <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-            <div style={{ marginBottom: '56px' }}>
+            <div style={{ marginBottom: '48px' }}>
               <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '11px', fontWeight: 400, letterSpacing: '.2em', color: '#8B6F47' }}>{c.step1.eyebrow}</span>
-              <h1 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: '52px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '10px' }}>{c.step1.title}</h1>
+              <h1 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: isMobile ? '36px' : '52px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '10px' }}>{c.step1.title}</h1>
               <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '14px', fontWeight: 300, color: 'rgba(26,24,20,.5)', marginTop: '12px', maxWidth: '500px', lineHeight: 1.75 }}>{c.step1.sub}</p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '16px' }}>
               {/* Capsule */}
               <div
                 onClick={() => setBoxType('capsule')}
@@ -79,7 +85,7 @@ export default function BuildPage() {
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 40px rgba(26,24,20,.1)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = ''; }}
               >
-                <div style={{ height: '420px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ height: isMobile ? '56vw' : '420px', overflow: 'hidden', position: 'relative' }}>
                   <img src="https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?auto=format&w=900&h=600&fit=crop&q=80" alt="Capsule Box" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .7s ease' }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')} />
@@ -87,7 +93,7 @@ export default function BuildPage() {
                     <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '10px', fontWeight: 500, letterSpacing: '.12em', color: '#1A1814' }}>{c.step1.capsule.tag}</span>
                   </div>
                 </div>
-                <div style={{ padding: '36px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ padding: isMobile ? '24px 20px' : '36px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <h2 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: '32px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic' }}>{c.step1.capsule.name}</h2>
                   <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', color: 'rgba(26,24,20,.45)', letterSpacing: '.03em' }}>{c.step1.capsule.pieces}</p>
                   <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '14px', fontWeight: 300, lineHeight: 1.75, color: 'rgba(26,24,20,.6)', marginTop: '4px' }}>{c.step1.capsule.desc}</p>
@@ -112,7 +118,7 @@ export default function BuildPage() {
                 onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 40px rgba(26,24,20,.1)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = ''; }}
               >
-                <div style={{ height: '420px', overflow: 'hidden', position: 'relative' }}>
+                <div style={{ height: isMobile ? '56vw' : '420px', overflow: 'hidden', position: 'relative' }}>
                   <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&w=900&h=600&fit=crop&q=80" alt="Group Box" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform .7s ease' }}
                     onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.04)')}
                     onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')} />
@@ -123,7 +129,7 @@ export default function BuildPage() {
                     <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '10px', fontWeight: 500, letterSpacing: '.12em', color: '#FAFAF8' }}>{c.step1.group.discount}</span>
                   </div>
                 </div>
-                <div style={{ padding: '36px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ padding: isMobile ? '24px 20px' : '36px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <h2 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: '32px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic' }}>{c.step1.group.name}</h2>
                   <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', color: 'rgba(26,24,20,.45)', letterSpacing: '.03em' }}>{c.step1.group.pieces}</p>
                   <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '14px', fontWeight: 300, lineHeight: 1.75, color: 'rgba(26,24,20,.6)', marginTop: '4px' }}>{c.step1.group.desc}</p>
@@ -149,28 +155,30 @@ export default function BuildPage() {
       {step === 2 && (
         <div dir={dir} style={{ background: '#FAFAF8', minHeight: 'calc(100vh - 116px)', paddingBottom: '100px' }}>
           {/* Sticky filter bar */}
-          <div style={{ position: 'sticky', top: '64px', zIndex: 50, background: '#FAFAF8', borderBottom: '1px solid rgba(26,24,20,.07)', padding: '0 64px' }}>
-            <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px', gap: '24px', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                {tabs.map(t => (
-                  <button
-                    key={t.key}
-                    onClick={() => setFilter(t.key)}
-                    style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', fontWeight: filter === t.key ? 500 : 400, color: filter === t.key ? '#F5F0E8' : 'rgba(26,24,20,.5)', background: filter === t.key ? '#1A1814' : 'transparent', border: 'none', padding: '6px 16px', cursor: 'pointer', letterSpacing: '.04em', transition: 'all .2s' }}
-                  >
-                    {t.label}
-                  </button>
-                ))}
+          <div style={{ position: 'sticky', top: '64px', zIndex: 50, background: '#FAFAF8', borderBottom: '1px solid rgba(26,24,20,.07)', overflowX: 'auto', WebkitOverflowScrolling: 'touch' as const }}>
+            <div style={{ padding: `0 ${px}` }}>
+              <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '56px', gap: '24px', minWidth: 'max-content' }}>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  {tabs.map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => setFilter(t.key)}
+                      style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', fontWeight: filter === t.key ? 500 : 400, color: filter === t.key ? '#F5F0E8' : 'rgba(26,24,20,.5)', background: filter === t.key ? '#1A1814' : 'transparent', border: 'none', padding: '6px 16px', cursor: 'pointer', letterSpacing: '.04em', transition: 'all .2s', whiteSpace: 'nowrap' }}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', color: 'rgba(26,24,20,.45)', letterSpacing: '.04em', flexShrink: 0 }}>
+                  {selected.length} / {maxPieces} {c.step2.selectedLabel}
+                </span>
               </div>
-              <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', color: 'rgba(26,24,20,.45)', letterSpacing: '.04em' }}>
-                {selected.length} / {maxPieces} {c.step2.selectedLabel}
-              </span>
             </div>
           </div>
 
           {/* Product grid */}
           <div style={{ padding: '3px 3px', paddingTop: '0' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '3px', maxWidth: '100%' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : isTablet ? 'repeat(3,1fr)' : 'repeat(4,1fr)', gap: '3px', maxWidth: '100%' }}>
               {filteredProducts.map(p => {
                 const isSel = selected.includes(p.id);
                 const isDisabled = isFull && !isSel;
@@ -193,7 +201,7 @@ export default function BuildPage() {
                     </div>
                     <div style={{ padding: '12px 14px', border: isSel ? '2px solid #8B6F47' : '2px solid transparent', transition: 'border-color .2s' }}>
                       <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '10px', fontWeight: 400, color: '#8B6F47', letterSpacing: '.1em', textTransform: 'uppercase' }}>{isAr ? p.catAr : p.catEn}</p>
-                      <p style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: '18px', fontWeight: 300, color: '#1A1814', marginTop: '3px' }}>{isAr ? p.nameAr : p.nameEn}</p>
+                      <p style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: isMobile ? '15px' : '18px', fontWeight: 300, color: '#1A1814', marginTop: '3px' }}>{isAr ? p.nameAr : p.nameEn}</p>
                       <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '11px', fontWeight: 300, color: 'rgba(26,24,20,.45)', marginTop: '2px' }}>{p.fabric}</p>
                     </div>
                   </div>
@@ -206,12 +214,12 @@ export default function BuildPage() {
 
       {/* STEP 3 */}
       {step === 3 && (
-        <div dir={dir} style={{ background: '#FAFAF8', padding: '64px', minHeight: 'calc(100vh - 116px)' }}>
+        <div dir={dir} style={{ background: '#FAFAF8', padding: `${isMobile ? '32px' : '64px'} ${px}`, minHeight: 'calc(100vh - 116px)' }}>
           <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
             <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '11px', fontWeight: 400, letterSpacing: '.2em', color: '#8B6F47' }}>{c.step3.eyebrow}</span>
-            <h1 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: '48px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '10px', marginBottom: '40px' }}>{c.step3.title}</h1>
+            <h1 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: isMobile ? '32px' : '48px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '10px', marginBottom: '32px' }}>{c.step3.title}</h1>
 
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${maxPieces}, 1fr)`, gap: '3px', marginBottom: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: step3GridCols, gap: '3px', marginBottom: '40px' }}>
               {slots.map((prod, i) => (
                 <div key={i} style={{ position: 'relative', aspectRatio: '3/4', background: '#E8E4DC' }}>
                   {prod ? (
@@ -225,7 +233,7 @@ export default function BuildPage() {
                   ) : (
                     <div style={{ width: '100%', height: '100%', border: '1px dashed rgba(26,24,20,.2)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                       <span style={{ fontSize: '20px', color: 'rgba(26,24,20,.2)' }}>+</span>
-                      <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '10px', color: 'rgba(26,24,20,.3)', letterSpacing: '.1em' }}>{c.step3.emptySlot}</span>
+                      <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '10px', color: 'rgba(26,24,20,.3)', letterSpacing: '.1em', textAlign: 'center', padding: '0 4px' }}>{c.step3.emptySlot}</span>
                     </div>
                   )}
                 </div>
@@ -234,17 +242,17 @@ export default function BuildPage() {
 
             {/* Group share section */}
             {boxType === 'group' && (
-              <div style={{ background: '#F5F0E8', padding: '40px', marginBottom: '40px', border: '1px solid rgba(139,111,71,.15)' }}>
+              <div style={{ background: '#F5F0E8', padding: isMobile ? '24px 20px' : '40px', marginBottom: '40px', border: '1px solid rgba(139,111,71,.15)' }}>
                 <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '11px', fontWeight: 400, letterSpacing: '.2em', color: '#8B6F47' }}>{c.step3.shareEyebrow}</span>
-                <h3 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: '28px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '8px', marginBottom: '8px' }}>{c.step3.shareTitle}</h3>
+                <h3 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: isMobile ? '22px' : '28px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '8px', marginBottom: '8px' }}>{c.step3.shareTitle}</h3>
                 <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', fontWeight: 300, color: 'rgba(26,24,20,.6)', lineHeight: 1.75, marginBottom: '20px' }}>{c.step3.shareDesc}</p>
-                <div style={{ display: 'flex', gap: '0', alignItems: 'stretch' }}>
-                  <div style={{ flex: 1, background: '#FAFAF8', border: '1px solid rgba(26,24,20,.15)', padding: '10px 14px', fontFamily: "'DM Sans',sans-serif", fontSize: '12px', color: 'rgba(26,24,20,.5)' }}>
+                <div style={{ display: 'flex', gap: '0', alignItems: 'stretch', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                  <div style={{ flex: 1, background: '#FAFAF8', border: '1px solid rgba(26,24,20,.15)', padding: '10px 14px', fontFamily: "'DM Sans',sans-serif", fontSize: '12px', color: 'rgba(26,24,20,.5)', minWidth: 0, wordBreak: 'break-all' }}>
                     https://qom.eg/join/ABC123
                   </div>
                   <button
                     onClick={copyLink}
-                    style={{ background: '#1A1814', color: '#FAFAF8', border: 'none', padding: '10px 20px', fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', fontWeight: 500, cursor: 'pointer', letterSpacing: '.04em', transition: 'background .2s' }}
+                    style={{ background: '#1A1814', color: '#FAFAF8', border: 'none', padding: '10px 20px', fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', fontWeight: 500, cursor: 'pointer', letterSpacing: '.04em', transition: 'background .2s', whiteSpace: 'nowrap' }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = '#2D2924')}
                     onMouseLeave={(e) => (e.currentTarget.style.background = '#1A1814')}
                   >
@@ -255,7 +263,7 @@ export default function BuildPage() {
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '32px', borderTop: '1px solid rgba(26,24,20,.08)', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'space-between', paddingTop: '32px', borderTop: '1px solid rgba(26,24,20,.08)', flexWrap: 'wrap', gap: '16px', flexDirection: isMobile ? 'column' : 'row' }}>
               <button
                 onClick={() => setStep(2)}
                 style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', fontWeight: 400, color: '#1A1814', background: 'none', border: '1px solid rgba(26,24,20,.2)', padding: '12px 28px', cursor: 'pointer', letterSpacing: '.04em', transition: 'border-color .2s' }}
@@ -264,7 +272,7 @@ export default function BuildPage() {
               </button>
               <Link
                 href="/review"
-                style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', fontWeight: 500, color: '#FAFAF8', background: '#1A1814', padding: '14px 36px', textDecoration: 'none', letterSpacing: '.04em', transition: 'background .2s' }}
+                style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', fontWeight: 500, color: '#FAFAF8', background: '#1A1814', padding: '14px 36px', textDecoration: 'none', letterSpacing: '.04em', transition: 'background .2s', textAlign: 'center' }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = '#2D2924')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = '#1A1814')}
               >
@@ -277,27 +285,29 @@ export default function BuildPage() {
 
       {/* STICKY BOTTOM BAR (step 2) */}
       {step === 2 && (
-        <div dir={dir} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 90, background: '#FAFAF8', borderTop: '1px solid rgba(26,24,20,.1)', padding: '0 64px', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', boxShadow: '0 -4px 20px rgba(26,24,20,.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {slots.map((prod, i) => (
-              <div key={i} style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', border: prod ? '1.5px solid rgba(26,24,20,.2)' : '1.5px dashed rgba(26,24,20,.25)', background: prod ? 'transparent' : '#F5F0E8', flexShrink: 0 }}>
+        <div dir={dir} style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 90, background: '#FAFAF8', borderTop: '1px solid rgba(26,24,20,.1)', padding: `0 ${px}`, height: isMobile ? '64px' : '72px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', boxShadow: '0 -4px 20px rgba(26,24,20,.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '8px', overflow: 'hidden', flex: 1, minWidth: 0 }}>
+            {slots.slice(0, isMobile ? Math.min(maxPieces, 5) : maxPieces).map((prod, i) => (
+              <div key={i} style={{ width: isMobile ? '26px' : '32px', height: isMobile ? '26px' : '32px', borderRadius: '50%', overflow: 'hidden', border: prod ? '1.5px solid rgba(26,24,20,.2)' : '1.5px dashed rgba(26,24,20,.25)', background: prod ? 'transparent' : '#F5F0E8', flexShrink: 0 }}>
                 {prod && <img src={prod.img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
               </div>
             ))}
-            <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', color: 'rgba(26,24,20,.5)', marginInlineStart: '8px' }}>
+            <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', color: 'rgba(26,24,20,.5)', marginInlineStart: '4px', flexShrink: 0 }}>
               {selected.length} / {maxPieces}
             </span>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button
-              onClick={() => setStep(1)}
-              style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', fontWeight: 400, color: 'rgba(26,24,20,.5)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '.04em' }}
-            >
-              {c.step2.back}
-            </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+            {!isMobile && (
+              <button
+                onClick={() => setStep(1)}
+                style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '12px', fontWeight: 400, color: 'rgba(26,24,20,.5)', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '.04em' }}
+              >
+                {c.step2.back}
+              </button>
+            )}
             <button
               onClick={() => selected.length > 0 && setStep(3)}
-              style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', fontWeight: 500, color: '#FAFAF8', background: selected.length > 0 ? '#1A1814' : 'rgba(26,24,20,.3)', border: 'none', padding: '12px 28px', cursor: selected.length > 0 ? 'pointer' : 'not-allowed', letterSpacing: '.04em', transition: 'background .2s' }}
+              style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: isMobile ? '12px' : '13px', fontWeight: 500, color: '#FAFAF8', background: selected.length > 0 ? '#1A1814' : 'rgba(26,24,20,.3)', border: 'none', padding: isMobile ? '10px 20px' : '12px 28px', cursor: selected.length > 0 ? 'pointer' : 'not-allowed', letterSpacing: '.04em', transition: 'background .2s' }}
             >
               {c.step2.reviewBox}
             </button>

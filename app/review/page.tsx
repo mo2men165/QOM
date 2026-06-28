@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { useStore } from '@/lib/store';
 import { content } from '@/lib/content';
 import { products } from '@/lib/data';
+import { useResponsive } from '@/lib/responsive';
 
 export default function ReviewPage() {
   const { lang, boxType, selected, removeProduct } = useStore();
@@ -13,6 +14,8 @@ export default function ReviewPage() {
   const isAr = lang === 'ar';
   const dir = isAr ? 'rtl' : 'ltr';
   const [form, setForm] = useState({ name: '', phone: '', address: '' });
+  const { isMobile, isTablet } = useResponsive();
+  const px = isMobile ? '16px' : isTablet ? '32px' : '64px';
 
   const maxPieces = boxType === 'capsule' ? 5 : 10;
   const selectedProducts = selected.map(id => products.find(p => p.id === id)!).filter(Boolean);
@@ -21,20 +24,23 @@ export default function ReviewPage() {
   const price = boxType === 'group' ? c.summary.groupPrice : c.summary.capsulePrice;
   const boxLabel = boxType === 'group' ? c.summary.group : c.summary.capsule;
 
+  // On mobile, show slots in a 3-col grid
+  const itemGridCols = isMobile ? 'repeat(3, 1fr)' : `repeat(${maxPieces}, 1fr)`;
+
   return (
     <>
       <Nav />
 
-      <div dir={dir} style={{ background: '#FAFAF8', padding: '80px 64px', minHeight: 'calc(100vh - 64px)' }}>
-        <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.15fr 0.75fr', gap: '64px', alignItems: 'start' }}>
+      <div dir={dir} style={{ background: '#FAFAF8', padding: `${isMobile ? '40px' : '80px'} ${px}`, minHeight: 'calc(100vh - 64px)' }}>
+        <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1.15fr 0.75fr', gap: isMobile ? '40px' : '64px', alignItems: 'start' }}>
           {/* Left column */}
           <div>
             <span style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '11px', fontWeight: 400, letterSpacing: '.2em', color: '#8B6F47' }}>{c.eyebrow}</span>
-            <h1 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: '48px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '10px', marginBottom: '4px' }}>{c.title}</h1>
+            <h1 style={{ fontFamily: "'Cormorant Garamond','Cairo',serif", fontSize: isMobile ? '32px' : '48px', fontWeight: 300, color: '#1A1814', fontStyle: 'italic', marginTop: '10px', marginBottom: '4px' }}>{c.title}</h1>
             <p style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '13px', color: 'rgba(26,24,20,.45)', letterSpacing: '.04em', marginBottom: '32px' }}>{boxLabel}</p>
 
             {/* Item grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${maxPieces}, 1fr)`, gap: '3px', marginBottom: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: itemGridCols, gap: '3px', marginBottom: '24px' }}>
               {slots.map((prod, i) => (
                 <div key={i} style={{ position: 'relative', aspectRatio: '3/4', background: '#E8E4DC' }}>
                   {prod ? (
@@ -59,18 +65,18 @@ export default function ReviewPage() {
             </Link>
 
             {/* Pricing strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0', marginTop: '40px', border: '1px solid rgba(26,24,20,.08)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: '0', marginTop: '40px', border: '1px solid rgba(26,24,20,.08)' }}>
               {c.pricing.map((item, i) => (
-                <div key={i} style={{ padding: '20px 24px', borderRight: i < c.pricing.length - 1 ? '1px solid rgba(26,24,20,.08)' : 'none', textAlign: 'center' }}>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '22px', fontWeight: 300, color: '#8B6F47', fontStyle: 'italic' }}>{item.value}</div>
-                  <div style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '10px', fontWeight: 400, color: 'rgba(26,24,20,.45)', letterSpacing: '.1em', marginTop: '4px' }}>{item.label}</div>
+                <div key={i} style={{ padding: '20px 24px', borderBottom: isMobile && i < c.pricing.length - 1 ? '1px solid rgba(26,24,20,.08)' : 'none', borderRight: !isMobile && i < c.pricing.length - 1 ? '1px solid rgba(26,24,20,.08)' : 'none', textAlign: 'center', display: 'flex', flexDirection: isMobile ? 'row' : 'column', justifyContent: isMobile ? 'space-between' : 'center', alignItems: isMobile ? 'center' : 'center' }}>
+                  <div style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '10px', fontWeight: 400, color: 'rgba(26,24,20,.45)', letterSpacing: '.1em' }}>{item.label}</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '22px', fontWeight: 300, color: '#8B6F47', fontStyle: 'italic', marginTop: isMobile ? 0 : '4px' }}>{item.value}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right column (sticky) */}
-          <div style={{ position: 'sticky', top: '80px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Right column */}
+          <div style={{ position: isMobile ? 'static' : 'sticky', top: '80px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Order summary */}
             <div style={{ background: '#FFFFFF', border: '1px solid rgba(26,24,20,.08)', padding: '28px' }}>
               <h3 style={{ fontFamily: "'DM Sans','Cairo',sans-serif", fontSize: '11px', fontWeight: 500, letterSpacing: '.14em', color: 'rgba(26,24,20,.5)', marginBottom: '20px' }}>{c.summary.title}</h3>

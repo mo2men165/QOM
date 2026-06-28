@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Nav from '@/components/Nav';
 import Footer from '@/components/Footer';
 import { products } from '@/lib/data';
+import { useResponsive } from '@/lib/responsive';
 
 function useReveal() {
   useEffect(() => {
@@ -29,6 +30,8 @@ const TABS = [
 export default function SeasonPage() {
   useReveal();
   const [filter, setFilter] = useState('all');
+  const { isMobile, isTablet } = useResponsive();
+  const px = isMobile ? '16px' : isTablet ? '40px' : '64px';
 
   const filtered = products.filter(p => {
     if (filter === 'all') return true;
@@ -36,20 +39,22 @@ export default function SeasonPage() {
     return p.filter === filter;
   });
 
+  const gridCols = isMobile ? 'repeat(2, 1fr)' : isTablet ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)';
+
   return (
     <>
       <Nav />
 
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section style={{ position: 'relative', height: '72vh', overflow: 'hidden', paddingTop: '72px' }}>
+      <section style={{ position: 'relative', height: isMobile ? '60vh' : '72vh', overflow: 'hidden', paddingTop: '72px' }}>
         <img src="/qom/37.png" alt="This Season"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%', display: 'block' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(26,24,20,0.72) 0%, rgba(26,24,20,0.15) 60%)' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '56px 64px', maxWidth: '1440px' }}>
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: `${isMobile ? '32px' : '56px'} ${px}`, maxWidth: '1440px' }}>
           <span className="eyebrow eyebrow-light" style={{ marginBottom: '14px' }}>Season 2025</span>
           <h1 style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(52px, 7vw, 88px)',
+            fontSize: isMobile ? '44px' : 'clamp(52px, 7vw, 88px)',
             fontWeight: 300, fontStyle: 'italic',
             lineHeight: 1.0, color: '#F5F0E8',
           }}>The Collection</h1>
@@ -62,11 +67,11 @@ export default function SeasonPage() {
           </p>
         </div>
         <div style={{
-          position: 'absolute', top: '104px', right: '64px',
+          position: 'absolute', top: isMobile ? '88px' : '104px', right: px,
           background: 'rgba(250,250,248,0.92)', backdropFilter: 'blur(10px)',
-          padding: '12px 20px',
+          padding: isMobile ? '8px 14px' : '12px 20px',
         }}>
-          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '28px', fontWeight: 300, fontStyle: 'italic', color: '#1A1814', lineHeight: 1 }}>{products.length}</span>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: isMobile ? '22px' : '28px', fontWeight: 300, fontStyle: 'italic', color: '#1A1814', lineHeight: 1 }}>{products.length}</span>
           <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '9px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(26,24,20,0.5)', display: 'block', marginTop: '4px' }}>Pieces</span>
         </div>
       </section>
@@ -76,12 +81,15 @@ export default function SeasonPage() {
         position: 'sticky', top: '72px', zIndex: 50,
         background: 'rgba(250,250,248,0.96)', backdropFilter: 'blur(12px)',
         borderBottom: '1px solid rgba(26,24,20,0.08)',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch' as const,
       }}>
         <div style={{
           maxWidth: '1440px', margin: '0 auto',
-          padding: '0 64px', display: 'flex',
+          padding: `0 ${px}`, display: 'flex',
           alignItems: 'center', justifyContent: 'space-between',
           height: '54px', gap: '24px',
+          minWidth: 'max-content',
         }}>
           <div style={{ display: 'flex', gap: '2px' }}>
             {TABS.map(t => (
@@ -93,10 +101,11 @@ export default function SeasonPage() {
                 background: filter === t.key ? '#1A1814' : 'transparent',
                 border: 'none', padding: '7px 18px',
                 cursor: 'pointer', transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
               }}>{t.label}</button>
             ))}
           </div>
-          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '18px', fontWeight: 300, fontStyle: 'italic', color: 'rgba(26,24,20,0.4)' }}>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '18px', fontWeight: 300, fontStyle: 'italic', color: 'rgba(26,24,20,0.4)', flexShrink: 0 }}>
             {filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}
           </span>
         </div>
@@ -104,10 +113,10 @@ export default function SeasonPage() {
 
       {/* ── Editorial intro strip ────────────────────────── */}
       <div style={{ background: '#F5F0E8', borderBottom: '1px solid rgba(26,24,20,0.06)' }}>
-        <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '32px 64px', display: 'flex', alignItems: 'center', gap: '40px' }}>
+        <div style={{ maxWidth: '1440px', margin: '0 auto', padding: `${isMobile ? '20px' : '32px'} ${px}`, display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '16px' : '40px' }}>
           <div style={{ flex: 1 }}>
             <span className="eyebrow" style={{ marginBottom: '8px' }}>Factory Direct</span>
-            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '20px', fontWeight: 300, fontStyle: 'italic', color: '#1A1814', lineHeight: 1.35 }}>
+            <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: isMobile ? '17px' : '20px', fontWeight: 300, fontStyle: 'italic', color: '#1A1814', lineHeight: 1.35 }}>
               Every piece from Egypt's certified export factories — the same that supply the world's top brands.
             </p>
           </div>
@@ -122,7 +131,7 @@ export default function SeasonPage() {
             No items in this category yet.
           </div>
         ) : (
-          <div style={{ padding: '3px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '3px' }}>
+          <div style={{ padding: '3px', display: 'grid', gridTemplateColumns: gridCols, gap: '3px' }}>
             {filtered.map((p, i) => (
               <div key={p.id} className={`product-card reveal d${(i % 3) + 1}`}>
                 <div className="card-img" style={{ position: 'relative' }}>
@@ -133,9 +142,9 @@ export default function SeasonPage() {
                   )}
                   <img src={p.img} alt={p.nameEn} />
                 </div>
-                <div style={{ padding: '20px 22px 24px', background: '#FAFAF8' }}>
+                <div style={{ padding: isMobile ? '12px 14px 16px' : '20px 22px 24px', background: '#FAFAF8' }}>
                   <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '9px', fontWeight: 500, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#8B6F47', marginBottom: '6px' }}>{p.catEn}</p>
-                  <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '22px', fontWeight: 300, color: '#1A1814', lineHeight: 1.15, marginBottom: '4px' }}>{p.nameEn}</p>
+                  <p style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: isMobile ? '18px' : '22px', fontWeight: 300, color: '#1A1814', lineHeight: 1.15, marginBottom: '4px' }}>{p.nameEn}</p>
                   <p style={{ fontFamily: "'DM Sans',sans-serif", fontSize: '11px', fontWeight: 300, color: 'rgba(26,24,20,0.4)', marginBottom: '14px' }}>{p.fabric}</p>
                   <Link href="/build" className="card-cta" style={{
                     fontFamily: "'DM Sans',sans-serif", fontSize: '10px', fontWeight: 500,
@@ -155,11 +164,11 @@ export default function SeasonPage() {
       </div>
 
       {/* ── CTA band ─────────────────────────────────────── */}
-      <section style={{ background: '#1A1814', padding: '80px 64px', textAlign: 'center' }}>
+      <section style={{ background: '#1A1814', padding: `${isMobile ? '56px' : '80px'} ${px}`, textAlign: 'center' }}>
         <span className="eyebrow eyebrow-light reveal" style={{ marginBottom: '16px' }}>Get Started</span>
         <h2 className="reveal d1" style={{
           fontFamily: "'Cormorant Garamond', serif",
-          fontSize: 'clamp(32px, 4vw, 52px)',
+          fontSize: isMobile ? '32px' : 'clamp(32px, 4vw, 52px)',
           fontWeight: 300, fontStyle: 'italic',
           color: '#F5F0E8', lineHeight: 1.1, marginBottom: '32px',
         }}>Build Your Box Today</h2>

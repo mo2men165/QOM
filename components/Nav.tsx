@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { content } from '@/lib/content';
+import { useResponsive } from '@/lib/responsive';
 
 export default function Nav() {
   const { lang, toggleLang } = useStore();
@@ -12,6 +13,7 @@ export default function Nav() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isMobile, isTablet } = useResponsive();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 56);
@@ -19,10 +21,16 @@ export default function Nav() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const ink   = scrolled ? '#1A1814'               : '#F5F0E8';
+  // Close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
+
+  const ink    = scrolled ? '#1A1814'               : '#F5F0E8';
   const inkSub = scrolled ? 'rgba(26,24,20,0.55)'  : 'rgba(245,240,232,0.65)';
-  const bg    = scrolled ? 'rgba(250,250,248,0.96)' : 'transparent';
+  const bg     = scrolled ? 'rgba(250,250,248,0.96)' : 'transparent';
   const border = scrolled ? '1px solid rgba(26,24,20,0.08)' : '1px solid transparent';
+
+  const showHamburger = isTablet; // show on mobile + tablet
+  const px = isMobile ? '0 16px' : isTablet ? '0 32px' : '0 64px';
 
   return (
     <>
@@ -41,7 +49,7 @@ export default function Nav() {
       >
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 64px', height: '72px',
+          padding: px, height: '72px',
           maxWidth: '1440px', margin: '0 auto',
         }}>
           {/* Logo */}
@@ -55,96 +63,113 @@ export default function Nav() {
             QOM
           </Link>
 
-          {/* Centre nav links */}
-          <div className="hide-mobile" style={{ display: 'flex', gap: '44px', alignItems: 'center' }}>
-            {c.items.map(item => {
-              const isActive = pathname === item.href;
-              const isPreorder = item.href === '/preorder';
-              return (
-                <Link key={item.href} href={item.href} style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '11px', fontWeight: isActive ? 500 : 400,
-                  letterSpacing: '0.12em', textTransform: 'uppercase',
-                  color: isActive ? ink : inkSub, textDecoration: 'none',
-                  transition: 'color 0.25s ease', whiteSpace: 'nowrap',
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  borderBottom: isActive ? `1px solid ${ink}` : '1px solid transparent',
-                  paddingBottom: '2px',
-                }}
-                  onMouseEnter={e => (e.currentTarget.style.color = ink)}
-                  onMouseLeave={e => (e.currentTarget.style.color = isActive ? ink : inkSub)}
-                >
-                  {isPreorder && (
-                    <span style={{
-                      display: 'inline-block', width: '5px', height: '5px',
-                      borderRadius: '50%', background: '#8B6F47',
-                      flexShrink: 0, animation: 'pulse 1.4s ease infinite',
-                    }} />
-                  )}
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
+          {/* Centre nav links — hidden on tablet & mobile */}
+          {!showHamburger && (
+            <div style={{ display: 'flex', gap: '44px', alignItems: 'center' }}>
+              {c.items.map(item => {
+                const isActive = pathname === item.href;
+                const isPreorder = item.href === '/preorder';
+                return (
+                  <Link key={item.href} href={item.href} style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '11px', fontWeight: isActive ? 500 : 400,
+                    letterSpacing: '0.12em', textTransform: 'uppercase',
+                    color: isActive ? ink : inkSub, textDecoration: 'none',
+                    transition: 'color 0.25s ease', whiteSpace: 'nowrap',
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    borderBottom: isActive ? `1px solid ${ink}` : '1px solid transparent',
+                    paddingBottom: '2px',
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.color = ink)}
+                    onMouseLeave={e => (e.currentTarget.style.color = isActive ? ink : inkSub)}
+                  >
+                    {isPreorder && (
+                      <span style={{
+                        display: 'inline-block', width: '5px', height: '5px',
+                        borderRadius: '50%', background: '#8B6F47',
+                        flexShrink: 0, animation: 'pulse 1.4s ease infinite',
+                      }} />
+                    )}
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
 
           {/* Right actions */}
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexShrink: 0 }}>
-            <button onClick={toggleLang} style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '11px', fontWeight: 400,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: inkSub, padding: '4px 0',
-              transition: 'color 0.25s ease',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.color = ink)}
-              onMouseLeave={e => (e.currentTarget.style.color = inkSub)}
-            >{c.langSwitch}</button>
+          <div style={{ display: 'flex', gap: isMobile ? '10px' : '16px', alignItems: 'center', flexShrink: 0 }}>
+            {!isMobile && (
+              <button onClick={toggleLang} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '11px', fontWeight: 400,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                color: inkSub, padding: '4px 0',
+                transition: 'color 0.25s ease',
+              }}
+                onMouseEnter={e => (e.currentTarget.style.color = ink)}
+                onMouseLeave={e => (e.currentTarget.style.color = inkSub)}
+              >{c.langSwitch}</button>
+            )}
 
-            <div style={{ width: '1px', height: '16px', background: scrolled ? 'rgba(26,24,20,0.12)' : 'rgba(245,240,232,0.2)', transition: 'background 0.4s' }} />
+            {!isMobile && (
+              <div style={{ width: '1px', height: '16px', background: scrolled ? 'rgba(26,24,20,0.12)' : 'rgba(245,240,232,0.2)', transition: 'background 0.4s' }} />
+            )}
 
-            <Link href="/build" style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '11px', fontWeight: 500,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              textDecoration: 'none', whiteSpace: 'nowrap',
-              padding: '10px 26px',
-              color: scrolled ? '#FAFAF8' : '#1A1814',
-              background: scrolled ? '#1A1814' : '#F5F0E8',
-              transition: 'background 0.35s ease, color 0.35s ease',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#8B6F47'; e.currentTarget.style.color = '#FAFAF8'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = scrolled ? '#1A1814' : '#F5F0E8'; e.currentTarget.style.color = scrolled ? '#FAFAF8' : '#1A1814'; }}
-            >{c.cta}</Link>
+            {!showHamburger && (
+              <Link href="/build" style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '11px', fontWeight: 500,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+                padding: '10px 26px',
+                color: scrolled ? '#FAFAF8' : '#1A1814',
+                background: scrolled ? '#1A1814' : '#F5F0E8',
+                transition: 'background 0.35s ease, color 0.35s ease',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#8B6F47'; e.currentTarget.style.color = '#FAFAF8'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = scrolled ? '#1A1814' : '#F5F0E8'; e.currentTarget.style.color = scrolled ? '#FAFAF8' : '#1A1814'; }}
+              >{c.cta}</Link>
+            )}
 
-            {/* Mobile hamburger */}
-            <button
-              className="hide-tablet"
-              onClick={() => setMobileOpen(o => !o)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'none', flexDirection: 'column', gap: '5px', padding: '4px' }}
-            >
-              {[0,1,2].map(i => (
-                <span key={i} style={{ display: 'block', width: '22px', height: '1.5px', background: ink, transition: 'background 0.4s' }} />
-              ))}
-            </button>
+            {/* Hamburger — visible on tablet & mobile */}
+            {showHamburger && (
+              <button
+                onClick={() => setMobileOpen(o => !o)}
+                aria-label="Toggle menu"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '5px', padding: '4px' }}
+              >
+                {mobileOpen
+                  ? (
+                    <span style={{ display: 'block', fontSize: '22px', color: ink, lineHeight: 1, transition: 'color 0.4s' }}>×</span>
+                  )
+                  : [0, 1, 2].map(i => (
+                    <span key={i} style={{ display: 'block', width: '22px', height: '1.5px', background: ink, transition: 'background 0.4s' }} />
+                  ))
+                }
+              </button>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile/tablet menu overlay */}
       {mobileOpen && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 999,
           background: '#1A1814', paddingTop: '72px',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', gap: '40px',
+          justifyContent: 'center', gap: '36px',
+          overflowY: 'auto',
         }}>
           {c.items.map(item => (
             <Link key={item.href} href={item.href}
               onClick={() => setMobileOpen(false)}
               style={{
                 fontFamily: "'Cormorant Garamond', serif",
-                fontSize: '36px', fontWeight: 300, fontStyle: 'italic',
+                fontSize: isMobile ? '32px' : '40px',
+                fontWeight: 300, fontStyle: 'italic',
                 color: pathname === item.href ? '#C4A882' : '#F5F0E8',
                 textDecoration: 'none', letterSpacing: '0.02em',
                 display: 'flex', alignItems: 'center', gap: '12px',
@@ -156,12 +181,21 @@ export default function Nav() {
               {item.label}
             </Link>
           ))}
-          <Link href="/build" onClick={() => setMobileOpen(false)} style={{
-            marginTop: '16px', fontFamily: "'DM Sans', sans-serif",
-            fontSize: '12px', fontWeight: 500, letterSpacing: '0.12em',
-            textTransform: 'uppercase', color: '#1A1814',
-            background: '#C4A882', padding: '14px 40px', textDecoration: 'none',
-          }}>{c.cta}</Link>
+          <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginTop: '8px' }}>
+            <Link href="/build" onClick={() => setMobileOpen(false)} style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '12px', fontWeight: 500, letterSpacing: '0.12em',
+              textTransform: 'uppercase', color: '#1A1814',
+              background: '#C4A882', padding: '14px 40px', textDecoration: 'none',
+            }}>{c.cta}</Link>
+            <button onClick={() => { toggleLang(); }} style={{
+              background: 'none', border: '1px solid rgba(245,240,232,0.2)', cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '11px', fontWeight: 400,
+              letterSpacing: '0.1em', textTransform: 'uppercase',
+              color: 'rgba(245,240,232,0.5)', padding: '13px 20px',
+            }}>{c.langSwitch}</button>
+          </div>
         </div>
       )}
     </>
